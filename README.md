@@ -11,7 +11,7 @@
 [mit-badge]: https://img.shields.io/badge/license-MIT-blue.svg
 [mit-url]: LICENSE.md
 
-This crate is a WIP client for connecting to Minecraft servers. It doesn't provide any rendering capabilities and is targeted as a library to use when wanting to automate actions on a Minecraft server player/bot.
+This crate is a work-in-progress client for connecting to Minecraft servers. It doesn't provide any rendering capabilities and is targeted as a library to use when wanting to automate actions on a Minecraft server player/bot.
 
 ## Contributing
 
