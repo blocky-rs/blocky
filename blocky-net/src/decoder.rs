@@ -34,7 +34,7 @@ impl Decoder for String {
     fn decode<T: Read>(buf: &mut T) -> anyhow::Result<Self> {
         let length = VarInt::decode(buf)?.0 as usize;
 
-        let max_length = std::i16::MAX as usize;
+        let max_length = i16::MAX as usize;
         if length > max_length {
             anyhow::bail!(
                 "String length {} exceeds maximum allowed length of {}",

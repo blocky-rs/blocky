@@ -63,7 +63,7 @@ impl Decoder for VarInt {
 impl Encoder for VarInt {
     fn byte_len(&self) -> usize {
         for i in 1..5 {
-            if (self.0 & -1 << i * 7) != 0 {
+            if (self.0 & -1 << (i * 7)) != 0 {
                 continue;
             }
 
@@ -78,11 +78,11 @@ impl Encoder for VarInt {
 
         loop {
             if (value & !(SEGMENT_BITS as i32)) == 0 {
-                buf.write(&[value as u8])?;
+                buf.write_all(&[value as u8])?;
                 break;
             }
 
-            buf.write(&[((value & (SEGMENT_BITS as i32)) | (CONTINUE_BIT as i32)) as u8])?;
+            buf.write_all(&[((value & (SEGMENT_BITS as i32)) | (CONTINUE_BIT as i32)) as u8])?;
             value = ((value as u32) >> 7) as i32;
         }
 
@@ -145,7 +145,7 @@ impl Decoder for VarLong {
 impl Encoder for VarLong {
     fn byte_len(&self) -> usize {
         for i in 1..10 {
-            if (self.0 & -1 << i * 7) != 0 {
+            if (self.0 & -1 << (i * 7)) != 0 {
                 continue;
             }
 
@@ -160,11 +160,11 @@ impl Encoder for VarLong {
 
         loop {
             if (value & !(SEGMENT_BITS as i64)) == 0 {
-                buf.write(&[value as u8])?;
+                buf.write_all(&[value as u8])?;
                 break;
             }
 
-            buf.write(&[((value & (SEGMENT_BITS as i64)) | (CONTINUE_BIT as i64)) as u8])?;
+            buf.write_all(&[((value & (SEGMENT_BITS as i64)) | (CONTINUE_BIT as i64)) as u8])?;
             value = ((value as u64) >> 7) as i64;
         }
 

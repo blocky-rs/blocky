@@ -27,7 +27,7 @@ impl Encoder for bool {
     }
 
     fn encode<T: Write>(&self, buf: &mut T) -> anyhow::Result<()> {
-        buf.write(&[*self as u8])?;
+        buf.write_all(&[*self as u8])?;
         Ok(())
     }
 }
@@ -40,7 +40,7 @@ impl Encoder for String {
     fn encode<T: Write>(&self, buf: &mut T) -> anyhow::Result<()> {
         let length = self.len();
 
-        let max_length = std::i16::MAX as usize;
+        let max_length = i16::MAX as usize;
         if length > max_length {
             anyhow::bail!(
                 "String length {} exceeds maximum allowed length of {}",
