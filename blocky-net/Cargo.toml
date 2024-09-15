@@ -2,6 +2,17 @@
 name = "blocky-net"
 version = "0.2.0"
 edition = "2021"
+license = "MIT"
+authors = ["Jaden Buchan <me@jaden.bio>"]
+repository = "https://github.com/blocky-rs/blocky"
+readme = "README.md"
+keywords = ["minecraft"]
+categories = ["games"]
+description = """
+A Rust library for creating Minecraft clients,
+enabling packet manipulation and automated
+interactions with Minecraft servers.
+"""
 
 [dependencies]
 anyhow = "1.0"

@@ -1,3 +1,7 @@
 [workspace]
 members = ["blocky", "blocky-net"]
 resolver = "2"
+
+[workspace.metadata.release]
+shared-version = true
+dependent-version = "upgrade"
