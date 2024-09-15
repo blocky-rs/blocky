@@ -1,0 +1,3 @@
+[workspace]
+members = ["blocky", "blocky-net"]
+resolver = "2"
