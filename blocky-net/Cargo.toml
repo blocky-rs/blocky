@@ -1,6 +1,6 @@
 [package]
 name = "blocky-net"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 license = "MIT"
 authors = ["Jaden Buchan <me@jaden.bio>"]
@@ -16,4 +16,3 @@ interactions with Minecraft servers.
 
 [dependencies]
 anyhow = "1.0"
-bytes = "1.7"
