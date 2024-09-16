@@ -1,5 +1,7 @@
 use std::io::Write;
 
+use uuid::Uuid;
+
 use crate::types::VarInt;
 
 pub trait Encoder {
@@ -51,6 +53,17 @@ impl Encoder for String {
 
         VarInt(length as i32).encode(buf)?;
         buf.write_all(&self.to_bytes()?)?;
+        Ok(())
+    }
+}
+
+impl Encoder for Uuid {
+    fn byte_len(&self) -> usize {
+        16
+    }
+
+    fn encode<T: Write>(&self, buf: &mut T) -> anyhow::Result<()> {
+        self.as_u128().encode(buf)?;
         Ok(())
     }
 }

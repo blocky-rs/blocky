@@ -17,6 +17,12 @@ impl From<i32> for VarInt {
     }
 }
 
+impl From<VarInt> for i32 {
+    fn from(value: VarInt) -> Self {
+        value.0
+    }
+}
+
 impl Deref for VarInt {
     type Target = i32;
 
@@ -96,6 +102,12 @@ pub struct VarLong(pub i64);
 impl From<i64> for VarLong {
     fn from(value: i64) -> Self {
         Self(value)
+    }
+}
+
+impl From<VarLong> for i64 {
+    fn from(value: VarLong) -> Self {
+        value.0
     }
 }
 

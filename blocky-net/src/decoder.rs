@@ -1,5 +1,7 @@
 use std::io::{Cursor, Read};
 
+use uuid::Uuid;
+
 use crate::types::VarInt;
 
 pub trait Decoder {
@@ -48,6 +50,13 @@ impl Decoder for String {
 
         let s = std::str::from_utf8(&bytes)?;
         Ok(s.to_string())
+    }
+}
+
+impl Decoder for Uuid {
+    fn decode<T: Read>(buf: &mut T) -> anyhow::Result<Self> {
+        let value = u128::decode(buf)?;
+        Ok(Uuid::from_u128(value))
     }
 }
 
