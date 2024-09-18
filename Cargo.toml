@@ -1,5 +1,5 @@
 [workspace]
-members = ["blocky", "blocky-net"]
+members = ["blocky", "blocky-net", "blocky-nbt"]
 resolver = "2"
 
 [workspace.metadata.release]
