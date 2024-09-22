@@ -7,6 +7,27 @@ use std::{
 
 use crate::{decoder::Decoder, encoder::Encoder};
 
+pub struct LengthInferredVecU8(pub Vec<u8>);
+
+impl Decoder for LengthInferredVecU8 {
+    fn decode<T: Read>(buf: &mut T) -> anyhow::Result<Self> {
+        let mut v = Vec::new();
+        buf.read_to_end(&mut v)?;
+        Ok(Self(v))
+    }
+}
+
+impl Encoder for LengthInferredVecU8 {
+    fn byte_len(&self) -> usize {
+        self.0.len()
+    }
+
+    fn encode<T: Write>(&self, buf: &mut T) -> anyhow::Result<()> {
+        buf.write_all(&self.0)?;
+        Ok(())
+    }
+}
+
 pub const MAX_LENGTH: usize = 1024 * 1024;
 
 pub trait LengthPrefix {
@@ -14,6 +35,37 @@ pub trait LengthPrefix {
     fn from_len(value: usize) -> Self;
     fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+}
+
+pub struct LengthPrefixedVecU8<L>(pub Vec<u8>, PhantomData<L>)
+where
+    L: Encoder + Decoder + LengthPrefix;
+
+impl<L> Decoder for LengthPrefixedVecU8<L>
+where
+    L: Encoder + Decoder + LengthPrefix,
+{
+    fn decode<T: Read>(buf: &mut T) -> anyhow::Result<Self> {
+        let len = L::decode(buf)?.len();
+        let mut data = vec![0; len];
+        buf.read_exact(&mut data)?;
+        Ok(Self(data, PhantomData))
+    }
+}
+
+impl<L> Encoder for LengthPrefixedVecU8<L>
+where
+    L: Encoder + Decoder + LengthPrefix,
+{
+    fn byte_len(&self) -> usize {
+        L::from_len(self.0.len()).byte_len() + self.0.len()
+    }
+
+    fn encode<T: Write>(&self, buf: &mut T) -> anyhow::Result<()> {
+        L::from_len(self.0.len()).encode(buf)?;
+        buf.write_all(&self.0)?;
+        Ok(())
     }
 }
 
@@ -46,17 +98,11 @@ where
     L: Encoder + Decoder + LengthPrefix,
     V: Encoder + Decoder,
 {
-    fn byte_len(&self) -> usize
-    where
-        Self: Sized,
-    {
+    fn byte_len(&self) -> usize {
         L::from_len(self.0.len()).byte_len() + self.0.iter().map(|v| v.byte_len()).sum::<usize>()
     }
 
-    fn encode<T: Write>(&self, buf: &mut T) -> anyhow::Result<()>
-    where
-        Self: Sized,
-    {
+    fn encode<T: Write>(&self, buf: &mut T) -> anyhow::Result<()> {
         L::from_len(self.0.len()).encode(buf)?;
 
         for item in &self.0 {

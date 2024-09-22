@@ -43,7 +43,7 @@ pub mod status {
 
 pub mod login {
     use blocky_derive::{Decoder, Encoder, Packet};
-    use blocky_net::types::{LengthPrefixedVec, VarInt};
+    use blocky_net::types::{LengthInferredVecU8, LengthPrefixedVec, LengthPrefixedVecU8, VarInt};
     use uuid::Uuid;
 
     // clientbound
@@ -56,8 +56,8 @@ pub mod login {
     #[derive(Packet)]
     pub struct EncryptionRequest {
         pub server_id: String,
-        pub public_key: LengthPrefixedVec<VarInt, u8>,
-        pub verify_token: LengthPrefixedVec<VarInt, u8>,
+        pub public_key: LengthPrefixedVecU8<VarInt>,
+        pub verify_token: LengthPrefixedVecU8<VarInt>,
         pub should_authenticate: bool,
     }
 
@@ -85,7 +85,7 @@ pub mod login {
     pub struct LoginPluginRequest {
         pub message_id: VarInt,
         pub channel: String, // TODO: Implement resource location / identifiers
-        pub data: u8, // TODO: Implement a vec that consumes the rest of the bytes in the packet
+        pub data: LengthInferredVecU8,
     }
 
     #[derive(Packet)]
@@ -111,7 +111,7 @@ pub mod login {
     pub struct LoginPluginResponse {
         pub message_id: VarInt,
         pub success: bool,
-        pub data: u8, // TODO: Implement a vec that consumes the rest of the bytes in the packet
+        pub data: LengthInferredVecU8,
     }
 
     #[derive(Packet)]
@@ -120,6 +120,6 @@ pub mod login {
     #[derive(Packet)]
     pub struct CookieResponse {
         pub key: String, // TODO: Implement resource location / identifiers
-        pub payload: Option<LengthPrefixedVec<VarInt, u8>>,
+        pub payload: Option<LengthPrefixedVecU8<VarInt>>,
     }
 }
