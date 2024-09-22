@@ -1,6 +1,12 @@
-use std::io::{Cursor, Read};
+use std::{
+    io::{Cursor, Read},
+    str::FromStr,
+};
 
-use blocky_world::position::{BlockPosition, ChunkPosition};
+use blocky_world::{
+    position::{BlockPosition, ChunkPosition},
+    resources::ResourceLocation,
+};
 use uuid::Uuid;
 
 use crate::types::VarInt;
@@ -16,6 +22,16 @@ pub trait Decoder {
     {
         let mut cursor = Cursor::new(bytes);
         Self::decode(&mut cursor)
+    }
+}
+
+impl Decoder for ResourceLocation {
+    fn decode<T: Read>(buf: &mut T) -> anyhow::Result<Self>
+    where
+        Self: Sized,
+    {
+        let s = String::decode(buf)?;
+        ResourceLocation::from_str(&s)
     }
 }
 

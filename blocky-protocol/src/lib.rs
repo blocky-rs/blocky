@@ -44,6 +44,7 @@ pub mod status {
 pub mod login {
     use blocky_derive::{Decoder, Encoder, Packet};
     use blocky_net::types::{LengthInferredVecU8, LengthPrefixedVec, LengthPrefixedVecU8, VarInt};
+    use blocky_world::resources::ResourceLocation;
     use uuid::Uuid;
 
     // clientbound
@@ -84,13 +85,13 @@ pub mod login {
     #[derive(Packet)]
     pub struct LoginPluginRequest {
         pub message_id: VarInt,
-        pub channel: String, // TODO: Implement resource location / identifiers
+        pub channel: ResourceLocation,
         pub data: LengthInferredVecU8,
     }
 
     #[derive(Packet)]
     pub struct CookieRequest {
-        pub key: String, // TODO: Implement resource location / identifiers
+        pub key: ResourceLocation,
     }
 
     // serverbound
@@ -119,7 +120,7 @@ pub mod login {
 
     #[derive(Packet)]
     pub struct CookieResponse {
-        pub key: String, // TODO: Implement resource location / identifiers
+        pub key: ResourceLocation,
         pub payload: Option<LengthPrefixedVecU8<VarInt>>,
     }
 }

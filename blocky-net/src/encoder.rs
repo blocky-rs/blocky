@@ -1,6 +1,9 @@
 use std::io::Write;
 
-use blocky_world::position::{BlockPosition, ChunkPosition};
+use blocky_world::{
+    position::{BlockPosition, ChunkPosition},
+    resources::ResourceLocation,
+};
 use uuid::Uuid;
 
 use crate::types::VarInt;
@@ -21,6 +24,23 @@ pub trait Encoder {
         let mut buf = Vec::with_capacity(self.byte_len());
         self.encode(&mut buf)?;
         Ok(buf)
+    }
+}
+
+impl Encoder for ResourceLocation {
+    fn byte_len(&self) -> usize
+    where
+        Self: Sized,
+    {
+        let len = self.path.len() + 1 + self.namespace.len();
+        VarInt(len as i32).byte_len() + len
+    }
+
+    fn encode<T: Write>(&self, buf: &mut T) -> anyhow::Result<()>
+    where
+        Self: Sized,
+    {
+        self.to_string().encode(buf)
     }
 }
 

@@ -49,12 +49,16 @@ dependencies = [
  "anyhow",
  "blocky-derive",
  "blocky-net",
+ "blocky-world",
  "uuid",
 ]
 
 [[package]]
 name = "blocky-world"
 version = "0.2.1"
+dependencies = [
+ "anyhow",
+]
 
 [[package]]
 name = "darling"
