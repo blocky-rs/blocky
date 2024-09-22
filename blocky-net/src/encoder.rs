@@ -1,5 +1,6 @@
 use std::io::Write;
 
+use blocky_world::position::{BlockPosition, ChunkPosition};
 use uuid::Uuid;
 
 use crate::types::VarInt;
@@ -20,6 +21,51 @@ pub trait Encoder {
         let mut buf = Vec::with_capacity(self.byte_len());
         self.encode(&mut buf)?;
         Ok(buf)
+    }
+}
+
+impl<V: Encoder> Encoder for Option<V> {
+    fn byte_len(&self) -> usize {
+        match self {
+            Some(v) => v.byte_len() + 1,
+            None => 1,
+        }
+    }
+
+    fn encode<T: Write>(&self, buf: &mut T) -> anyhow::Result<()> {
+        match self {
+            Some(value) => {
+                bool::encode(&true, buf)?;
+                value.encode(buf)
+            }
+            None => bool::encode(&false, buf),
+        }
+    }
+}
+
+impl Encoder for ChunkPosition {
+    fn byte_len(&self) -> usize {
+        8
+    }
+
+    fn encode<T: Write>(&self, buf: &mut T) -> anyhow::Result<()> {
+        i32::encode(&self.x, buf)?;
+        i32::encode(&self.z, buf)?;
+        Ok(())
+    }
+}
+
+impl Encoder for BlockPosition {
+    fn byte_len(&self) -> usize {
+        8
+    }
+
+    fn encode<T: Write>(&self, buf: &mut T) -> anyhow::Result<()> {
+        let value = ((self.x as u64 & 0x3FFFFFF) << 38)
+            | ((self.z as u64 & 0x3FFFFFF) << 12)
+            | (self.y as u64 & 0xFFF);
+
+        u64::encode(&value, buf)
     }
 }
 
@@ -69,31 +115,30 @@ impl Encoder for Uuid {
 }
 
 macro_rules! impl_number_encoder {
-    ($typ:ty) => {
-        impl Encoder for $typ {
-            fn byte_len(&self) -> usize {
-                std::mem::size_of::<Self>()
+    ($($typ:ty),* $(,)?) => {
+        $(
+            impl Encoder for $typ {
+                fn byte_len(&self) -> usize {
+                    std::mem::size_of::<Self>()
+                }
+
+                fn encode<T: Write>(&self, buf: &mut T) -> anyhow::Result<()> {
+                    buf.write_all(&self.to_be_bytes())?;
+                    Ok(())
+                }
             }
 
-            fn encode<T: Write>(&self, buf: &mut T) -> anyhow::Result<()> {
-                buf.write_all(&self.to_be_bytes())?;
-                Ok(())
+            impl super::types::LengthPrefix for $typ {
+                fn len(&self) -> usize {
+                    *self as usize
+                }
+
+                fn from_len(value: usize) -> Self {
+                    value as $typ
+                }
             }
-        }
+        )*
     };
 }
 
-impl_number_encoder!(u8);
-impl_number_encoder!(u16);
-impl_number_encoder!(u32);
-impl_number_encoder!(u64);
-impl_number_encoder!(u128);
-
-impl_number_encoder!(i8);
-impl_number_encoder!(i16);
-impl_number_encoder!(i32);
-impl_number_encoder!(i64);
-impl_number_encoder!(i128);
-
-impl_number_encoder!(f32);
-impl_number_encoder!(f64);
+impl_number_encoder!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);

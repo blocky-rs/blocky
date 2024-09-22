@@ -1,5 +1,5 @@
 [package]
-name = "blocky-net"
+name = "blocky-derive"
 version = "0.2.1"
 edition = "2021"
 license = "MIT"
@@ -15,6 +15,10 @@ interactions with Minecraft servers.
 """
 
 [dependencies]
-anyhow = "1.0"
-uuid = "1.10"
-blocky-world = { path = "../blocky-world", version = "0.2.1" }
+syn = { version = "2.0", features = ["full"] }
+quote = "1.0"
+proc-macro2 = "1.0"
+darling = "0.20"
+
+[lib]
+proc-macro = true

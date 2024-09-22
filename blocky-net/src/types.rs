@@ -1,15 +1,87 @@
 use std::{
     io::{Read, Write},
+    iter,
+    marker::PhantomData,
     ops::{Deref, DerefMut},
 };
 
 use crate::{decoder::Decoder, encoder::Encoder};
+
+pub const MAX_LENGTH: usize = 1024 * 1024;
+
+pub trait LengthPrefix {
+    fn len(&self) -> usize;
+    fn from_len(value: usize) -> Self;
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
+
+pub struct LengthPrefixedVec<L, V>(pub Vec<V>, PhantomData<L>)
+where
+    L: Encoder + Decoder + LengthPrefix,
+    V: Encoder + Decoder;
+
+impl<L, V> Decoder for LengthPrefixedVec<L, V>
+where
+    L: Encoder + Decoder + LengthPrefix,
+    V: Encoder + Decoder,
+{
+    fn decode<T: Read>(buf: &mut T) -> anyhow::Result<Self> {
+        let len = L::decode(buf)?.len();
+        if len > MAX_LENGTH {
+            anyhow::bail!("Length exceeds maximum allowed length");
+        }
+
+        let v = iter::repeat_with(|| V::decode(buf))
+            .take(len)
+            .collect::<anyhow::Result<Vec<V>>>()?;
+
+        Ok(Self(v, PhantomData))
+    }
+}
+
+impl<L, V> Encoder for LengthPrefixedVec<L, V>
+where
+    L: Encoder + Decoder + LengthPrefix,
+    V: Encoder + Decoder,
+{
+    fn byte_len(&self) -> usize
+    where
+        Self: Sized,
+    {
+        L::from_len(self.0.len()).byte_len() + self.0.iter().map(|v| v.byte_len()).sum::<usize>()
+    }
+
+    fn encode<T: Write>(&self, buf: &mut T) -> anyhow::Result<()>
+    where
+        Self: Sized,
+    {
+        L::from_len(self.0.len()).encode(buf)?;
+
+        for item in &self.0 {
+            item.encode(buf)?;
+        }
+
+        Ok(())
+    }
+}
 
 static SEGMENT_BITS: u8 = 0b01111111;
 static CONTINUE_BIT: u8 = 0b10000000;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Default, PartialOrd, Ord)]
 pub struct VarInt(pub i32);
+
+impl LengthPrefix for VarInt {
+    fn len(&self) -> usize {
+        self.0 as usize
+    }
+
+    fn from_len(value: usize) -> Self {
+        Self(value as i32)
+    }
+}
 
 impl From<i32> for VarInt {
     fn from(value: i32) -> Self {
@@ -98,6 +170,16 @@ impl Encoder for VarInt {
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Default, PartialOrd, Ord)]
 pub struct VarLong(pub i64);
+
+impl LengthPrefix for VarLong {
+    fn len(&self) -> usize {
+        self.0 as usize
+    }
+
+    fn from_len(value: usize) -> Self {
+        Self(value as i64)
+    }
+}
 
 impl From<i64> for VarLong {
     fn from(value: i64) -> Self {

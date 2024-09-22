@@ -1,5 +1,5 @@
 [package]
-name = "blocky-net"
+name = "blocky-protocol"
 version = "0.2.1"
 edition = "2021"
 license = "MIT"
@@ -15,6 +15,7 @@ interactions with Minecraft servers.
 """
 
 [dependencies]
+blocky-derive = { path = "../blocky-derive", version = "0.2.1" }
+blocky-net = { path = "../blocky-net", version = "0.2.1" }
 anyhow = "1.0"
 uuid = "1.10"
-blocky-world = { path = "../blocky-world", version = "0.2.1" }

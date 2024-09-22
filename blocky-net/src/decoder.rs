@@ -1,5 +1,6 @@
 use std::io::{Cursor, Read};
 
+use blocky_world::position::{BlockPosition, ChunkPosition};
 use uuid::Uuid;
 
 use crate::types::VarInt;
@@ -15,6 +16,39 @@ pub trait Decoder {
     {
         let mut cursor = Cursor::new(bytes);
         Self::decode(&mut cursor)
+    }
+}
+
+impl<V: Decoder> Decoder for Option<V> {
+    fn decode<T: Read>(buf: &mut T) -> anyhow::Result<Self> {
+        let present = bool::decode(buf)?;
+
+        if present {
+            Ok(Some(V::decode(buf)?))
+        } else {
+            Ok(None)
+        }
+    }
+}
+
+impl Decoder for ChunkPosition {
+    fn decode<T: Read>(buf: &mut T) -> anyhow::Result<Self> {
+        let x = i32::decode(buf)?;
+        let z = i32::decode(buf)?;
+
+        Ok(Self { x, z })
+    }
+}
+
+impl Decoder for BlockPosition {
+    fn decode<T: Read>(buf: &mut T) -> anyhow::Result<Self> {
+        let val = i64::decode(buf)?;
+
+        let x = (val >> 38) as i32;
+        let y = (val & 0xFFF) as i32;
+        let z = (val << 26 >> 38) as i32;
+
+        Ok(Self { x, y, z })
     }
 }
 
@@ -61,28 +95,17 @@ impl Decoder for Uuid {
 }
 
 macro_rules! impl_number_decoder {
-    ($typ:ty) => {
-        impl Decoder for $typ {
-            fn decode<T: Read>(buf: &mut T) -> anyhow::Result<Self> {
-                let mut bytes = [0; std::mem::size_of::<Self>()];
-                buf.read_exact(&mut bytes)?;
-                Ok(Self::from_be_bytes(bytes))
+    ($($typ:ty),* $(,)?) => {
+        $(
+            impl Decoder for $typ {
+                fn decode<T: Read>(buf: &mut T) -> anyhow::Result<Self> {
+                    let mut bytes = [0; std::mem::size_of::<Self>()];
+                    buf.read_exact(&mut bytes)?;
+                    Ok(Self::from_be_bytes(bytes))
+                }
             }
-        }
+        )*
     };
 }
 
-impl_number_decoder!(u8);
-impl_number_decoder!(u16);
-impl_number_decoder!(u32);
-impl_number_decoder!(u64);
-impl_number_decoder!(u128);
-
-impl_number_decoder!(i8);
-impl_number_decoder!(i16);
-impl_number_decoder!(i32);
-impl_number_decoder!(i64);
-impl_number_decoder!(i128);
-
-impl_number_decoder!(f32);
-impl_number_decoder!(f64);
+impl_number_decoder!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
