@@ -1,5 +1,5 @@
 [package]
-name = "blocky-nbt"
+name = "blocky-auth"
 version = "0.2.1"
 edition = "2021"
 license = "MIT"
@@ -15,10 +15,3 @@ interactions with Minecraft servers.
 """
 
 [dependencies]
-anyhow = "1.0"
-simd_cesu8 = "1.0"
-indexmap = { version = "2.5", optional = true }
-
-[features]
-default = ["preserve_order"]
-preserve_order = ["dep:indexmap"]

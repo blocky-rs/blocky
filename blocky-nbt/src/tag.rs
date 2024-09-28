@@ -1,3 +1,5 @@
+use std::ops::{Deref, DerefMut};
+
 #[cfg(feature = "preserve_order")]
 pub type Map<T> = indexmap::IndexMap<String, T>;
 #[cfg(not(feature = "preserve_order"))]
@@ -92,8 +94,36 @@ impl NbtTag {
 #[derive(Debug, Clone, PartialEq)]
 pub struct NbtList(Vec<NbtTag>);
 
+impl Deref for NbtList {
+    type Target = Vec<NbtTag>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for NbtList {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct NbtCompound(Map<NbtTag>);
+
+impl Deref for NbtCompound {
+    type Target = Map<NbtTag>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for NbtCompound {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
 
 macro_rules! impl_from {
     ($typ:ty, $tag:ident) => {

@@ -1,5 +1,5 @@
 [package]
-name = "blocky-nbt"
+name = "blocky-client"
 version = "0.2.1"
 edition = "2021"
 license = "MIT"
@@ -15,10 +15,8 @@ interactions with Minecraft servers.
 """
 
 [dependencies]
+blocky-net = { path = "../blocky-net", version = "0.2.1" }
+blocky-protocol = { path = "../blocky-protocol", version = "0.2.1" }
+blocky-world = { path = "../blocky-world", version = "0.2.1" }
 anyhow = "1.0"
-simd_cesu8 = "1.0"
-indexmap = { version = "2.5", optional = true }
-
-[features]
-default = ["preserve_order"]
-preserve_order = ["dep:indexmap"]
+uuid = "1.10"
