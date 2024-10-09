@@ -6,6 +6,7 @@ members = [
     "blocky-derive",
     "blocky-protocol",
     "blocky-world",
+    "blocky-auth",
 ]
 resolver = "2"
 
