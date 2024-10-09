@@ -10,8 +10,9 @@ pub enum ApiError {
     InvalidAddr(#[from] AddrParseError),
 }
 
+#[derive(Debug, Clone)]
 pub struct BlockedServers {
-    hashes: Vec<String>,
+    pub hashes: Vec<String>,
 }
 
 impl BlockedServers {
