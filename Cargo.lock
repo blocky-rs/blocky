@@ -90,6 +90,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "blocky-client"
+version = "0.2.1"
+dependencies = [
+ "anyhow",
+ "blocky-net",
+ "blocky-protocol",
+ "blocky-world",
+ "uuid",
+]
+
+[[package]]
 name = "blocky-derive"
 version = "0.2.1"
 dependencies = [
